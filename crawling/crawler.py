@@ -30,7 +30,7 @@ class Crawler:
     def get_browser(self):
         user_platform = platform.system()
         if user_platform == 'Linux':
-            driver = webdriver.Chrome(executable_path='driver/chromedriver')
+            driver = webdriver.Chrome(executable_path='/home/sofo/Desktop/rhymes/rhymes/driver/chromedriver_linux')
             return driver
         elif user_platform == 'Windows':
             driver = webdriver.Chrome(executable_path='driver/chromedriver.exe')
@@ -121,10 +121,10 @@ class GeniusCrawler(Crawler):
 
 
 # c = TekstowoCrawler()
-c = GeniusCrawler()
+# c = GeniusCrawler()
 # c.get_database_entries('https://www.tekstowo.pl/piosenka,sarius,sam.html')
-lyrics = c.extract_lyrics_from_url('https://genius.com/Sarius-sam-lyrics')
-c.parse_lyrics(lyrics)
+# lyrics = c.extract_lyrics_from_url('https://genius.com/Sarius-sam-lyrics')
+# c.parse_lyrics(lyrics)
 # lyrics = c.extract_lyrics_from_url('https://www.tekstowo.pl/piosenka,sarius,sam.html')
 # c.parse_lyrics(lyrics)
 
