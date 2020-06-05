@@ -1,11 +1,13 @@
 import platform
 import time
 
+from mysql.connector import IntegrityError
 from selenium import webdriver
 import mysql.connector
 
 list_of_all_vowels = ['a', 'ą', 'e', 'ę', 'i', 'o', 'u', 'y', 'ó']
 list_of_all_symbols = ['!', ',', '.', '?', ':', ';', '&', '%', '#', '@', '$', '£']
+
 
 class DatabaseConnector:
 
@@ -38,6 +40,18 @@ class DatabaseConnector:
         result = self.cursor.fetchall()
         return result
 
+    def add_link_entry_to_db(self, urlin):
+        try:
+            sql = "INSERT INTO links (url) VALUES (%s)"
+            val = (urlin,)
+            self.cursor.execute(sql, val)
+            self.db.commit()
+            print('Entry: {0} added to the DB'.format(val))
+        except IntegrityError:
+            print('Song {0} already exists in database'.format(urlin))
+        except:
+            print('Unable to add: {0}'.format(urlin))
+
 
 class DatabaseEntry:
 
@@ -47,6 +61,7 @@ class DatabaseEntry:
         self.vowels_count = nofVowels
         self.chars_count = nofChars
 
+
 class Crawler:
 
     def __init__(self):
@@ -55,7 +70,7 @@ class Crawler:
     def get_browser(self):
         user_platform = platform.system()
         if user_platform == 'Linux':
-            driver = webdriver.Chrome(executable_path='driver/chromedriver')
+            driver = webdriver.Chrome(executable_path='/home/sofo/Desktop/rhymes/rhymes/driver/chromedriver_linux')
             return driver
         elif user_platform == 'Windows':
             driver = webdriver.Chrome(executable_path='driver/chromedriver.exe')
@@ -82,8 +97,6 @@ class Crawler:
         vowels_count = self.get_vowels_count(vowels)
         chars_count = self.get_word_char_count(word)
         return DatabaseEntry(word, vowels, vowels_count, chars_count)
-
-
 
     def parse_lyrics(self, lyrics):
         words = set()
@@ -121,12 +134,10 @@ class TekstowoCrawler(Crawler):
         return db_entries
 
 
-
 class GeniusCrawler(Crawler):
 
     def __init__(self):
         Crawler.__init__(self)
-
 
     def extract_lyrics_from_url(self, url):
         self.get_page_source(url)
@@ -144,12 +155,10 @@ class GeniusCrawler(Crawler):
 
         return db_entries
 
-
-
-c = TekstowoCrawler()
+# c = TekstowoCrawler()
 # c = GeniusCrawler()
-db = DatabaseConnector()
-dbEntries = c.get_database_entries('https://www.tekstowo.pl/piosenka,sarius,sam.html')
+# c.get_database_entries('https://www.tekstowo.pl/piosenka,sarius,sam.html')
+
 # lyrics = c.extract_lyrics_from_url('https://genius.com/Sarius-sam-lyrics')
 # c.parse_lyrics(lyrics)
 # lyrics = c.extract_lyrics_from_url('https://www.tekstowo.pl/piosenka,sarius,sam.html')
@@ -164,6 +173,11 @@ for db_entry in dbEntries:
 songs = db.get_all_song_entries()
 for word in songs:
     print(word)
+
+
+# for i in enumerate(dbEntries):
+#     print('Adding {0}'.format(dbEntries[i]))
+#     db.add_song_entry_to_db(dbEntries[i])
 
 
 # ioe
