@@ -22,9 +22,15 @@ class DatabaseConnector:
         self.cursor = self.db.cursor()
 
     def add_song_entry_to_db(self, db_entry):
-        sql = "INSERT INTO words (word, vowels, vowels_count, chars_count) VALUES (%s, %s, %s, %s)"
-        val = (db_entry.word, db_entry.vowels, db_entry.vowels_count, db_entry.chars_count)
-        self.cursor.execute(sql, val)
+        try:
+            sql = "INSERT INTO words (word, vowels, vowels_count, chars_count) VALUES (%s, %s, %s, %s)"
+            val = (db_entry.word, db_entry.vowels, db_entry.vowels_count, db_entry.chars_count)
+            self.cursor.execute(sql, val)
+            self.db.commit()
+        except IntegrityError:
+            print('{0} already exists in database'.format(db_entry.word))
+        except:
+            print('Unable to add: {0}'.format(db_entry.word))
 
     def add_link_entry_to_db(self, urlin):
         try:
@@ -99,6 +105,17 @@ class Crawler:
                             words.add(word.lower())
         return words
 
+    def import_from_file(self):
+        dictionary = open('/home/sofo/Desktop/rhymes/rhymes/A.txt', 'r')
+        db = DatabaseConnector()
+        for line in dictionary:
+            word = line.strip()
+            db_entry = self.get_database_entry(word)
+            db.add_song_entry_to_db(db_entry)
+        print('Finished')
+        dictionary.close()
+
+
 
 class TekstowoCrawler(Crawler):
 
@@ -157,3 +174,5 @@ class GeniusCrawler(Crawler):
 
 # ioe
 # c.get_vowels('ziomek')
+dic_import = Crawler()
+dic_import.import_from_file()
