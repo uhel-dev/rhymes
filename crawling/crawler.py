@@ -5,6 +5,7 @@ from selenium import webdriver
 import mysql.connector
 
 list_of_all_vowels = ['a', 'ą', 'e', 'ę', 'i', 'o', 'u', 'y', 'ó']
+list_of_all_symbols = ['!', ',', '.', '?', ':', ';', '&', '%', '#', '@', '$', '£']
 
 class DatabaseConnector:
 
@@ -14,15 +15,28 @@ class DatabaseConnector:
             port='3306',
             user='admin',
             password='zapalniczka123',
-            database='rhymes'
+            database='rhymes',
+
         )
 
         self.cursor = self.db.cursor()
 
+        self.cursor.execute('SET NAMES UTF8')
+
+
     def add_song_entry_to_db(self, db_entry):
-        sql = "INSERT INTO words (word, vowels, vowels_count, chars_count) VALUES (%s, %s, %s, %s)"
-        val = (db_entry.word, db_entry.vowels, db_entry.vowels_count, db_entry.chars_count)
-        self.cursor.execute(sql, val)
+       try:
+           sql = "INSERT INTO words (word, vowels, vowels_count, chars_count) VALUES (N%s, N%s, %s, %s)"
+           val = (db_entry.word, db_entry.vowels, db_entry.vowels_count, db_entry.chars_count)
+           self.cursor.execute(sql, val)
+           self.db.commit()
+       except:
+           print('Word is already in the database')
+
+    def get_all_song_entries(self):
+        self.cursor.execute("SELECT * FROM words")
+        result = self.cursor.fetchall()
+        return result
 
 
 class DatabaseEntry:
@@ -142,10 +156,15 @@ dbEntries = c.get_database_entries('https://www.tekstowo.pl/piosenka,sarius,sam.
 # c.parse_lyrics(lyrics)
 
 
+for db_entry in dbEntries:
+    print('Adding {0}'.format(db_entry.word))
+    db.add_song_entry_to_db(db_entry)
 
-for i in enumerate(dbEntries):
-    print('Adding {0}'.format(dbEntries[i]))
-    db.add_song_entry_to_db(dbEntries[i])
+
+songs = db.get_all_song_entries()
+for word in songs:
+    print(word)
+
 
 # ioe
 # c.get_vowels('ziomek')
