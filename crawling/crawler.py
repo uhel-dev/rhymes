@@ -1,10 +1,12 @@
 import platform
 import time
 
+from mysql.connector import IntegrityError
 from selenium import webdriver
 import mysql.connector
 
 list_of_all_vowels = ['a', 'ą', 'e', 'ę', 'i', 'o', 'u', 'y', 'ó']
+
 
 class DatabaseConnector:
 
@@ -24,6 +26,18 @@ class DatabaseConnector:
         val = (db_entry.word, db_entry.vowels, db_entry.vowels_count, db_entry.chars_count)
         self.cursor.execute(sql, val)
 
+    def add_link_entry_to_db(self, urlin):
+        try:
+            sql = "INSERT INTO links (url) VALUES (%s)"
+            val = (urlin,)
+            self.cursor.execute(sql, val)
+            self.db.commit()
+            print('Entry: {0} added to the DB'.format(val))
+        except IntegrityError:
+            print('Song {0} already exists in database'.format(urlin))
+        except:
+            print('Unable to add: {0}'.format(urlin))
+
 
 class DatabaseEntry:
 
@@ -32,6 +46,7 @@ class DatabaseEntry:
         self.vowels = vowels
         self.vowels_count = nofVowels
         self.chars_count = nofChars
+
 
 class Crawler:
 
@@ -69,8 +84,6 @@ class Crawler:
         chars_count = self.get_word_char_count(word)
         return DatabaseEntry(word, vowels, vowels_count, chars_count)
 
-
-
     def parse_lyrics(self, lyrics):
         words = set()
         lyrics_arr = lyrics.split('\n')
@@ -107,12 +120,10 @@ class TekstowoCrawler(Crawler):
         return db_entries
 
 
-
 class GeniusCrawler(Crawler):
 
     def __init__(self):
         Crawler.__init__(self)
-
 
     def extract_lyrics_from_url(self, url):
         self.get_page_source(url)
@@ -130,9 +141,6 @@ class GeniusCrawler(Crawler):
 
         return db_entries
 
-
-
-
 # c = TekstowoCrawler()
 # c = GeniusCrawler()
 # c.get_database_entries('https://www.tekstowo.pl/piosenka,sarius,sam.html')
@@ -143,10 +151,9 @@ class GeniusCrawler(Crawler):
 # c.parse_lyrics(lyrics)
 
 
-
-for i in enumerate(dbEntries):
-    print('Adding {0}'.format(dbEntries[i]))
-    db.add_song_entry_to_db(dbEntries[i])
+# for i in enumerate(dbEntries):
+#     print('Adding {0}'.format(dbEntries[i]))
+#     db.add_song_entry_to_db(dbEntries[i])
 
 # ioe
 # c.get_vowels('ziomek')
