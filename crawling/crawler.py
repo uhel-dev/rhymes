@@ -6,8 +6,7 @@ from selenium import webdriver
 import mysql.connector
 
 list_of_all_vowels = ['a', 'ą', 'e', 'ę', 'i', 'o', 'u', 'y', 'ó']
-list_of_all_symbols = ['!', ',', '.', '?', ':', ';', '&', '%', '#', '@', '$', '£']
-
+list_of_all_symbols = ['!', ',', '.', '?', ':', ';', '&', '%', '#', '@', '$', '£', '"', '_', '-']
 
 class DatabaseConnector:
 
@@ -106,6 +105,10 @@ class Crawler:
                 words_from_sentence = sentence.split(' ')
                 for word in words_from_sentence:
                     if word != '':
+                        for symbol in list_of_all_symbols:
+                            if symbol in word:
+                                word.replace(symbol, '')
+
                         if '\u200a' in word:
                             word = word.split('\u200a')[0]
                             words.add(word.lower())
@@ -156,23 +159,22 @@ class GeniusCrawler(Crawler):
         return db_entries
 
 # c = TekstowoCrawler()
-# c = GeniusCrawler()
-# c.get_database_entries('https://www.tekstowo.pl/piosenka,sarius,sam.html')
 
+# c.get_database_entries('https://www.tekstowo.pl/piosenka,sarius,sam.html')
 # lyrics = c.extract_lyrics_from_url('https://genius.com/Sarius-sam-lyrics')
 # c.parse_lyrics(lyrics)
 # lyrics = c.extract_lyrics_from_url('https://www.tekstowo.pl/piosenka,sarius,sam.html')
 # c.parse_lyrics(lyrics)
 
 
-for db_entry in dbEntries:
-    print('Adding {0}'.format(db_entry.word))
-    db.add_song_entry_to_db(db_entry)
-
-
-songs = db.get_all_song_entries()
-for word in songs:
-    print(word)
+# for db_entry in dbEntries:
+#     print('Adding {0}'.format(db_entry.word))
+#     db.add_song_entry_to_db(db_entry)
+#
+#
+# songs = db.get_all_song_entries()
+# for word in songs:
+#     print(word)
 
 
 # for i in enumerate(dbEntries):
@@ -182,3 +184,13 @@ for word in songs:
 
 # ioe
 # c.get_vowels('ziomek')
+
+
+c = GeniusCrawler()
+db = DatabaseConnector()
+lines = []
+with open('C:/Users/Owner/PycharmProjects/untitled/A.txt', encoding="utf8") as my_file:
+    for line in my_file:
+        db_entry = c.get_database_entry(line.strip())
+        print('Adding {0}'.format(db_entry.word))
+        db.add_song_entry_to_db(db_entry)
